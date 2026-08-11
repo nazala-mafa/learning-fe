@@ -5,11 +5,13 @@
     import type { ProductCategory } from '~/types/productCategory';
     import z from 'zod';
     import FileUploader from '../FileUploader.vue';
+    import LargeFileUploader from '../LargeFileUploader.vue';
 
     const schema = z.object({
         nama: z.string().min(1).max(255),
         desc: z.string().max(1000).nullable().optional(),
         image_url: z.string().nullable().optional(),
+        geotiff_url: z.string().nullable().optional(),
         user_id: z.number(),
         product_category_id: z.number().nullable().optional(),
     })
@@ -33,6 +35,7 @@
         nama: defaultProduct?.nama,
         desc: defaultProduct?.desc,
         image_url: defaultProduct?.image_url,
+        geotiff_url: defaultProduct?.geotiff_url,
         user_id: defaultProduct?.user_id ?? auth.user?.id,
         product_category_id: defaultProduct?.product_category_id ?? null,
     })
@@ -69,6 +72,10 @@
 
         <UFormField label="Image" name="image_url">
             <FileUploader v-model="state.image_url" path="product" :preview="true" />
+        </UFormField>
+
+        <UFormField label="GeoTIFF" name="geotiff_url">
+            <LargeFileUploader v-model="state.geotiff_url" path="product" type="tiff" />
         </UFormField>
     </UForm>
 </template>

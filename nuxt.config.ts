@@ -6,7 +6,8 @@ export default defineNuxtConfig({
   css: ['~/assets/css/main.css'],
   runtimeConfig: {
     public: {
-      appUrl: process.env.APP_URL
+      appUrl: process.env.APP_URL,
+      uploadChunkSizeMb: process.env.UPLOAD_CHUNK_SIZE_MB
     }
   },
   routeRules: {

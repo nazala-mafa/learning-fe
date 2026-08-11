@@ -1,9 +1,11 @@
 <script setup lang="ts">
-    const { path, preview = true } = defineProps<{ path: string, preview?: boolean }>()
+    const { path, preview = true, type } = defineProps<{ path: string, preview?: boolean, type?: string }>()
     const fileUrl = defineModel<string>()
     const value = ref(null)
 
     const { $api } = useNuxtApp()
+
+    const accept = computed(() => type === 'tiff' ? '.tif,.tiff,image/tiff' : undefined)
 
     async function onUpload(file: File) {
         const formData = new FormData()
@@ -31,6 +33,7 @@
     <UFileUpload
         v-else
         v-model="value"
+        :accept="accept"
         v-on:update:model-value="(e) => {
             if (e) {
                 onUpload(e);

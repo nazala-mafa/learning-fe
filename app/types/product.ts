@@ -5,6 +5,7 @@ export interface Product {
     nama?: string
     desc?: string | null
     image_url?: string | null
+    geotiff_url?: string | null
     user_id?: number
     product_category_id?: number | null
     [key: string]: any
