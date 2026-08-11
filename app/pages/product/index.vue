@@ -63,6 +63,11 @@
         return [
             [
                 {
+                    label: 'Preview',
+                    icon: 'i-lucide-eye',
+                    href: `/product/${product.id}/preview`
+                },
+                {
                     label: 'Edit',
                     icon: 'i-lucide-edit',
                     href: `/product/${product.id}/edit`
