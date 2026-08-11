@@ -2,12 +2,11 @@
     import { useQuery } from '@tanstack/vue-query';
     import type { DropdownMenuItem, TableColumn } from '@nuxt/ui';
     import { useConfirmDialog } from '~/composeable/useCofirmDialog';
-    import type { Product } from '~/types/product';
-    import type { ProductCategory } from '~/types/productCategory';
+    import type { Hero } from '~/types/hero';
 
     definePageMeta({
         layout: 'dashboard',
-        title: 'Products',
+        title: 'Heroes',
     })
 
     const LIMIT = 10
@@ -15,41 +14,31 @@
     const route = useRoute()
     const router = useRouter()
 
+    const offset = computed(() => Number(route.query.offset ?? 0))
+
     const { $api } = useNuxtApp();
 
-    const offset = computed(() => Number(route.query.offset ?? 0))
-    const categoryFilter = ref<number | null>(route.query.product_category_id ? Number(route.query.product_category_id) : null)
-
-    const { data: categories } = useQuery({
-        queryKey: ['product-categories-all'],
-        queryFn: async () => await $api('/master-data/product/categories/', { query: { limit: 100 } }) as ProductCategory[],
+    const { data: heroes, refetch } = useQuery({
+        queryKey: computed(() => ['heroes', offset.value]),
+        queryFn: async () => await $api('/heroes/', { query: { offset: offset.value, limit: LIMIT } }) as Hero[],
     })
 
-    const categoryNameById = computed(() => Object.fromEntries((categories.value ?? []).map(c => [c.id, c.name])))
-
-    const { data: products, refetch } = useQuery({
-        queryKey: computed(() => ['products', offset.value, route.query.product_category_id]),
-        queryFn: async () => await $api('/master-data/products/', {
-            query: {
-                offset: offset.value,
-                limit: LIMIT,
-                product_category_id: route.query.product_category_id || undefined,
-            }
-        }) as Product[],
-    })
-
-    const columns: TableColumn<Product>[] = [
+    const columns: TableColumn<Hero>[] = [
         {
             accessorKey: 'num',
             header: '#',
         },
         {
-            accessorKey: 'nama',
+            accessorKey: 'name',
             header: 'Name',
         },
         {
-            id: 'category',
-            header: 'Category'
+            accessorKey: 'secret_name',
+            header: 'Secret Name',
+        },
+        {
+            accessorKey: 'age',
+            header: 'Age',
         },
         {
             id: 'action'
@@ -59,13 +48,13 @@
     const confirm = useConfirmDialog()
     const toast = useToast()
 
-    function getDropdownActions(product: Product): DropdownMenuItem[][] {
+    function getDropdownActions(hero: Hero): DropdownMenuItem[][] {
         return [
             [
                 {
                     label: 'Edit',
                     icon: 'i-lucide-edit',
-                    href: `/product/${product.id}/edit`
+                    href: `/hero/${hero.id}/edit`
                 },
                 {
                     label: 'Delete',
@@ -76,7 +65,7 @@
                             title: 'Delete confirmation',
                             description: 'Are you sure to delete this item? This item will deleted permanently.'
                         })) {
-                            await $api(`/master-data/products/${product.id}`, {
+                            await $api(`/heroes/${hero.id}`, {
                                 method: 'DELETE',
                             });
                             await refetch();
@@ -91,17 +80,7 @@
         ]
     }
 
-    function onFilter() {
-        router.push({ query: { product_category_id: categoryFilter.value ?? undefined, offset: 0 } });
-    }
-
-    function onReset() {
-        categoryFilter.value = null;
-        router.push({ query: {} });
-    }
-
-    const hasQueryParams = computed(() => Object.keys(route.query).length > 0);
-    const hasNext = computed(() => (products.value?.length ?? 0) === LIMIT)
+    const hasNext = computed(() => (heroes.value?.length ?? 0) === LIMIT)
 
     function goPrev() {
         router.push({ query: { ...route.query, offset: Math.max(0, offset.value - LIMIT) } })
@@ -114,26 +93,9 @@
 <template>
     <UMain>
         <UCard class="mb-6">
-            <NuxtLink href="/product/create">
-                <UButton>Create Product</UButton>
+            <NuxtLink href="/hero/create">
+                <UButton>Create Hero</UButton>
             </NuxtLink>
-        </UCard>
-
-        <UCard class="mb-6">
-            <div class="flex justify-between items-center">
-                <div class="flex justify-end items-center gap-2 w-full">
-                    <USelectMenu
-                        v-model="categoryFilter"
-                        :items="categories ?? []"
-                        label-key="name"
-                        value-key="id"
-                        placeholder="Filter by Category"
-                        class="w-64"
-                    />
-                    <UButton icon="i-lucide-filter" @click="onFilter" />
-                    <UButton v-if="hasQueryParams" icon="i-lucide-redo" @click="onReset"/>
-                </div>
-            </div>
         </UCard>
 
         <UCard
@@ -141,12 +103,9 @@
                 body: 'sm:p-0'
             }"
         >
-            <UTable :data="products" :columns="columns" empty="Product is empty">
+            <UTable :data="heroes" :columns="columns" empty="Hero is empty">
                 <template #num-cell="{ row }">
                     <span>{{ row.index + offset + 1 }}</span>
-                </template>
-                <template #category-cell="{ row }">
-                    {{ categoryNameById[row.original.product_category_id ?? -1] ?? '-' }}
                 </template>
                 <template #action-cell="{ row }">
                     <UDropdownMenu :items="getDropdownActions(row.original)">

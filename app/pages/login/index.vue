@@ -4,11 +4,10 @@
     })
 
     import * as z from 'zod';
-    import type { FormSubmitEvent, AuthFormField, FormError } from '@nuxt/ui';
+    import type { FormSubmitEvent, AuthFormField } from '@nuxt/ui';
 
     import type { User } from '~/types/user';
     import { useAuth } from '~/stores/auth';
-    import type { ValidationErrors } from '~/types/validationErrors';
 
     const toast = useToast()
 
@@ -18,19 +17,14 @@
         label: 'Email',
         placeholder: 'Enter your email',
         required: true,
-        defaultValue: 'test@example.com',
+        defaultValue: 'johndoe@example.com',
     }, {
         name: 'password',
         type: 'password',
         label: 'Password',
         placeholder: 'Enter your password',
         required: true,
-        defaultValue: 'password'
-    }, {
-        name: 'remember',
-        type: 'checkbox',
-        label: 'Remember me',
-        defaultValue: false,
+        defaultValue: 'secret'
     }]
 
     z.config(z.locales.id())
@@ -38,35 +32,36 @@
     const schema = z.object({
         email: z.email(),
         password: z.string().min(4),
-        remember: z.boolean().nullable()
     })
 
     type Schema = z.output<typeof schema>
 
     const { $api } = useNuxtApp()
+    const auth = useAuth()
 
     async function onSubmit(payload: FormSubmitEvent<Schema>) {
         try {
-            const { user } = await $api('/login', {
+            const { access_token } = await $api('/login', {
                 method: 'POST',
-                body: payload.data as Schema
+                body: payload.data,
             }) as {
-                message: string,
-                user: User
+                access_token: string,
+                token_type: string,
             }
 
-            useAuth().setUser(user)
+            auth.setToken(access_token)
+
+            const user = await $api('/users/me') as User
+
+            auth.setUser(user)
 
             navigateTo('/');
         } catch (error: unknown) {
-            const { data } = error as {data: ValidationErrors}
-            const message = data.errors.email?.[0]
-            if (message) {
-                toast.add({
-                    title: 'Sign in failed',
-                    description: message
-                })
-            }
+            auth.logout()
+            toast.add({
+                title: 'Sign in failed',
+                description: 'Incorrect email or password'
+            })
         }
     }
 </script>
@@ -87,7 +82,7 @@
                 }"
             >
                 <template #description>
-                    Don't have an account? <ULink to="#" class="text-primary font-medium">Sign up</ULink>.
+                    Don't have an account? <ULink to="/sign-up" class="text-primary font-medium">Sign up</ULink>.
                 </template>
             </UAuthForm>
         </UPageCard>

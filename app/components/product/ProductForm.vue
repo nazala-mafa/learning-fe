@@ -1,20 +1,17 @@
 <script setup lang="ts">
-    import SelectUserInput from '../user/SelectUserInput.vue';
+    import { useQuery } from '@tanstack/vue-query';
     import type { FormSubmitEvent } from '@nuxt/ui';
     import type { Product } from '~/types/product';
+    import type { ProductCategory } from '~/types/productCategory';
     import z from 'zod';
     import FileUploader from '../FileUploader.vue';
 
     const schema = z.object({
-        id: z.number().nullable(),
-        user: z.object({
-            value: z.number(),
-            label: z.string(),
-        }),
-        name: z.string().max(255),
-        description: z.string().max(1000),
-        price: z.number().min(0),
-        image_url: z.url(),
+        nama: z.string().min(1).max(255),
+        desc: z.string().max(1000).nullable().optional(),
+        image_url: z.string().nullable().optional(),
+        user_id: z.number(),
+        product_category_id: z.number().nullable().optional(),
     })
 
     export type Schema = z.output<typeof schema>
@@ -24,16 +21,20 @@
         defaultProduct?: Product
     }>()
 
+    const auth = useAuth()
+    const { $api } = useNuxtApp()
+
+    const { data: categories } = useQuery({
+        queryKey: ['product-categories-all'],
+        queryFn: async () => await $api('/master-data/product/categories/', { query: { limit: 100 } }) as ProductCategory[],
+    })
+
     const state = reactive({
-        id: defaultProduct?.id || null,
-        user: defaultProduct?.user && {
-            label: defaultProduct?.user.name,
-            value: defaultProduct?.user.id,
-        },
-        name: defaultProduct?.name,
-        description: defaultProduct?.description,
-        price: defaultProduct?.price,
+        nama: defaultProduct?.nama,
+        desc: defaultProduct?.desc,
         image_url: defaultProduct?.image_url,
+        user_id: defaultProduct?.user_id ?? auth.user?.id,
+        product_category_id: defaultProduct?.product_category_id ?? null,
     })
 
     async function _onSubmit(event: FormSubmitEvent<Schema>) {
@@ -43,22 +44,31 @@
 
 <template>
     <UForm :schema="schema" :state="state" @submit="_onSubmit" class="space-y-5" id="product-form" v-on:error="(err) => console.log(err)">
-        <SelectUserInput v-model="state.user" />
-
-        <UFormField label="Name" name="name">
-            <UInput v-model="state.name" class="w-full" />
+        <UFormField label="Owner">
+            <UInput :model-value="auth.user?.full_name || auth.user?.username" disabled class="w-full" />
         </UFormField>
 
-        <UFormField label="Description" name="description">
-            <UTextarea v-model="state.description" class="w-full" />
+        <UFormField label="Name" name="nama">
+            <UInput v-model="state.nama" class="w-full" />
         </UFormField>
 
-        <UFormField label="Price" name="price">
-            <UInput type="number" v-model="state.price" class="w-full" />
+        <UFormField label="Description" name="desc">
+            <UTextarea v-model="state.desc" class="w-full" />
+        </UFormField>
+
+        <UFormField label="Category" name="product_category_id">
+            <USelectMenu
+                v-model="state.product_category_id"
+                :items="categories ?? []"
+                label-key="name"
+                value-key="id"
+                placeholder="Select Category"
+                class="w-full"
+            />
         </UFormField>
 
         <UFormField label="Image" name="image_url">
-            <FileUploader v-model="state.image_url" path="product" />
+            <FileUploader v-model="state.image_url" path="product" :preview="true" />
         </UFormField>
     </UForm>
 </template>

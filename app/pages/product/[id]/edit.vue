@@ -1,6 +1,6 @@
 <script setup lang="ts">
     import { useQueryClient } from '@tanstack/vue-query';
-import ProductForm, { type Schema } from '~/components/product/ProductForm.vue';
+    import ProductForm, { type Schema } from '~/components/product/ProductForm.vue';
     import type { Product } from '~/types/product';
 
     definePageMeta({
@@ -12,23 +12,19 @@ import ProductForm, { type Schema } from '~/components/product/ProductForm.vue';
 
     const { $api } = useNuxtApp();
 
-    const { product } = await $api(`/api/product/${id}`) as {
-        product: Product
-    }
+    const product = await $api(`/master-data/products/${id}`) as Product
 
     const queryClient = useQueryClient();
 
     async function onSubmit(data: Schema) {
-        const { message } = await $api(`/api/product/${data.id}`, {
+        await $api(`/master-data/products/${id}`, {
             method: 'PATCH',
             body: data,
-        }) as {
-            message: string
-        }
+        })
 
         useToast().add({
             title: 'Update Product',
-            description: message
+            description: 'Product updated successfully'
         })
 
         navigateTo('/product');

@@ -1,16 +1,12 @@
 import type { PaginatedCursorData, PaginatedData } from "./paginatedData"
-import type { User } from "./user"
 
 export interface Product {
     id?: number
+    nama?: string
+    desc?: string | null
+    image_url?: string | null
     user_id?: number
-    user?: User
-    name?: string
-    description?: string
-    price?: number
-    image_url?: string
-    created_at?: string
-    updated_at?: string
+    product_category_id?: number | null
     [key: string]: any
 }
 

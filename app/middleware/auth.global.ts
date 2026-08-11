@@ -2,7 +2,7 @@ import { defineNuxtRouteMiddleware } from "nuxt/app";
 import { useAuth } from "~/stores/auth";
 
 export default defineNuxtRouteMiddleware((to, from) => {
-    const authGuest = ['login'] // white listed route names
+    const authGuest = ['login', 'sign-up'] // white listed route names
 
     if (typeof(to?.name) === 'string' && !authGuest.includes(to?.name)) {
         const auth = useAuth();

@@ -10,14 +10,20 @@
         icon: 'i-lucide-house',
         href: '/'
     }, {
-        label: 'Products',
-        icon: 'i-lucide-box',   
-        href: '/product',
-        active: /^\/product/.test(route.path)
+        label: 'Heroes',
+        icon: 'i-lucide-shield',
+        href: '/hero',
+        active: /^\/hero/.test(route.path)
     }, {
-        label: 'Users',
-        icon: 'i-lucide-users',
-        href: '/user'
+        label: 'Products',
+        icon: 'i-lucide-box',
+        href: '/product',
+        active: /^\/product(?!-category)/.test(route.path)
+    }, {
+        label: 'Product Categories',
+        icon: 'i-lucide-tags',
+        href: '/product-category',
+        active: /^\/product-category/.test(route.path)
     }])
 </script>
 

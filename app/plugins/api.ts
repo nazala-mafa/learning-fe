@@ -1,34 +1,20 @@
 export default defineNuxtPlugin(() => {
     const appUrl = useRuntimeConfig().public.appUrl;
 
-    const headers = new Headers();
-    headers.append('accept', 'application/json');
-
     const toast = useToast();
 
     const api = $fetch.create({
         baseURL: appUrl,
-        credentials: 'include',
         async onRequest({ options }) {
-            if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(options.method || '')) {
-                await $fetch(`${appUrl}/sanctum/csrf-cookie`, {
-                    credentials: 'include',
-                })
-            }
-
-            const token = useCookie('XSRF-TOKEN').value;
-            if (token) {
-                options.headers = {
-                    ...options.headers,
-                    // @ts-expect-error custom headers, syarat csrf-token dari laravel
-                    Accept: 'application/json',
-                    'X-XSRF-TOKEN': token,
-                }
+            const auth = useAuth();
+            if (auth.token) {
+                options.headers = new Headers(options.headers);
+                options.headers.set('Authorization', `Bearer ${auth.token}`);
             }
         },
-        async onResponseError({ response }) {            
+        async onResponseError({ response }) {
             if (response.status === 401) {
-                useAuth().setUser(null)
+                useAuth().logout()
                 navigateTo('/login');
                 toast.add({
                     title: 'Unautorized.',

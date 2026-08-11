@@ -9,6 +9,6 @@
 <template>
     <title>Boilerplate</title>
     <UMain>
-        <h1>Welcome, {{ user?.name }}.</h1>
+        <h1>Welcome, {{ user?.full_name || user?.username }}.</h1>
     </UMain>
 </template>

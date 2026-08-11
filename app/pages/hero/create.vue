@@ -1,10 +1,10 @@
 <script setup lang="ts">
     import { useQueryClient } from '@tanstack/vue-query';
-    import ProductForm, { type Schema } from '~/components/product/ProductForm.vue';
+    import HeroForm, { type Schema } from '~/components/hero/HeroForm.vue';
 
     definePageMeta({
         layout: 'dashboard',
-        title: 'Create Product',
+        title: 'Create Hero',
     })
 
     const { $api } = useNuxtApp()
@@ -12,19 +12,19 @@
     const queryClient = useQueryClient();
 
     async function onSubmit(data: Schema) {
-        await $api('/master-data/products/', {
+        await $api('/heroes/', {
             method: 'POST',
             body: data,
         })
 
         useToast().add({
-            title: 'Create Product',
-            description: 'Product created successfully'
+            title: 'Create Hero',
+            description: 'Hero created successfully'
         })
 
-        navigateTo('/product');
+        navigateTo('/hero');
 
-        queryClient.invalidateQueries({ queryKey: ['products'] });
+        queryClient.invalidateQueries({ queryKey: ['heroes'] });
     }
 </script>
 
@@ -32,17 +32,17 @@
     <div class="flex gap-5 items-start">
         <UCard class="max-w-xl flex-1">
             <template #header>
-                <h2 class="mb-0">Product Form</h2>
+                <h2 class="mb-0">Hero Form</h2>
             </template>
-            <ProductForm v-on:submit="onSubmit" />
+            <HeroForm v-on:submit="onSubmit" />
         </UCard>
         <UCard class="w-75">
             <template #header>
                 <h2 class="mb-0">Action</h2>
             </template>
             <div class="flex gap-5">
-                <UButton href="/product" color="neutral" class="flex-1 justify-center">Back</UButton>
-                <UButton type="submit" class="flex-1 justify-center" form="product-form">Save</UButton>
+                <UButton href="/hero" color="neutral" class="flex-1 justify-center">Back</UButton>
+                <UButton type="submit" class="flex-1 justify-center" form="hero-form">Save</UButton>
             </div>
         </UCard>
     </div>

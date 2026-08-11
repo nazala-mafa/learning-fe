@@ -1,30 +1,29 @@
 <script setup lang="ts">
     import type { DropdownMenuItem } from '@nuxt/ui';
-    const { $api } = useNuxtApp();
 
-    const items = ref<DropdownMenuItem[][]>([
+    const auth = useAuth()
+
+    const items = computed<DropdownMenuItem[][]>(() => [
         [
             {
-                label: 'Test',
+                label: auth.user?.full_name || auth.user?.username || '',
                 avatar: {
-                    src: gravatarUrl('text@example.com')
+                    src: gravatarUrl(auth.user?.email ?? '')
                 },
                 to: '/profile'
             },
             {
                 label: 'Logout',
                 icon: 'i-lucide-log-out',
-                onSelect: async (e) => {
+                onSelect: (e: Event) => {
                     e.preventDefault();
 
-                    const { message } = await $api('/logout', { method: 'POST' }) as { message: string };
+                    auth.logout();
 
-                    useToast().add({ 
+                    useToast().add({
                         title: 'Authentication',
-                        description: message 
+                        description: 'Logged out successfully'
                     });
-
-                    useAuth().setUser(null);
 
                     return navigateTo('/login');
                 }
@@ -35,6 +34,6 @@
 
 <template>
     <UDropdownMenu :items="items" size="xl">
-        <UAvatar size="xl" :src="gravatarUrl('text@example.com')" />
+        <UAvatar size="xl" :src="gravatarUrl(auth.user?.email ?? '')" />
     </UDropdownMenu>
 </template>
