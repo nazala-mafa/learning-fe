@@ -11,6 +11,7 @@ export default defineNuxtConfig({
   },
   routeRules: {
     '/files/**': { proxy: `${process.env.APP_URL}/files/**` },
+    '/api/**': { proxy: `${process.env.APP_URL}/api/**` },
   },
   typescript: {
     strict: true,

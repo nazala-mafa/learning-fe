@@ -1,10 +1,8 @@
 export default defineNuxtPlugin(() => {
-    const appUrl = useRuntimeConfig().public.appUrl;
-
     const toast = useToast();
 
     const api = $fetch.create({
-        baseURL: appUrl,
+        baseURL: '/api',
         async onRequest({ options }) {
             const auth = useAuth();
             if (auth.token) {
