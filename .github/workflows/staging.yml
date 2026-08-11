@@ -91,7 +91,6 @@ jobs:
               --label traefik.http.routers.learningFe.tls.certresolver=letsencrypt \
               --label traefik.http.services.learningFe.loadbalancer.server.port=3000 \
               --env-file /opt/docker/learning/.env.docker \
-              --restart unless-stopped \
               ghcr.io/${{ github.repository }}:latest
 
             docker image prune -f

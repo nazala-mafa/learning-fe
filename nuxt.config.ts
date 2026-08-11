@@ -6,13 +6,13 @@ export default defineNuxtConfig({
   css: ['~/assets/css/main.css', 'leaflet/dist/leaflet.css'],
   runtimeConfig: {
     public: {
-      appUrl: process.env.APP_URL,
-      uploadChunkSizeMb: process.env.UPLOAD_CHUNK_SIZE_MB
+      appUrl: 'https://api-learning.mafadev.com',
+      uploadChunkSizeMb: '5'
     }
   },
   routeRules: {
-    '/files/**': { proxy: `${process.env.APP_URL}/files/**` },
-    '/api/**': { proxy: `${process.env.APP_URL}/api/**` },
+    '/files/**': { proxy: `https://api-learning.mafadev.com/files/**` },
+    '/api/**': { proxy: `https://api-learning.mafadev.com/api/**` },
   },
   typescript: {
     strict: true,
