@@ -53,8 +53,8 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           build-args: |
-            APP_URL=${{ secrets.APP_URL }}
-            UPLOAD_CHUNK_SIZE_MB=5
+            NUXT_PUBLIC_APP_URL=${{ secrets.APP_URL }}
+            NUXT_PUBLIC_UPLOAD_CHUNK_SIZE_MB=5
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
