@@ -7,6 +7,7 @@ export interface User {
     full_name?: string | null
     disabled?: boolean | null
     job_title?: string | null
+    avatar_url?: string | null
 }
 
 export interface UserPaginatedData extends PaginatedData <User> {}

@@ -11,21 +11,19 @@
 
     const queryClient = useQueryClient();
 
-    async function onSubmit(data: Schema) {        
-        const { message } = await $api('/api/user', {
+    async function onSubmit(data: Schema) {
+        await $api('/master-data/users/', {
             method: 'POST',
             body: data,
-        }) as {
-            message: string
-        }
+        })
 
         useToast().add({
             title: 'Create User',
-            description: message
+            description: 'User created successfully'
         })
 
         navigateTo('/user');
-     
+
         queryClient.invalidateQueries({ queryKey: ['users'] });
     }
 </script>

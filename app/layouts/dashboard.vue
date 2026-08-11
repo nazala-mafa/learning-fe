@@ -15,15 +15,26 @@
         href: '/hero',
         active: /^\/hero/.test(route.path)
     }, {
-        label: 'Products',
-        icon: 'i-lucide-box',
-        href: '/product',
-        active: /^\/product(?!-category)/.test(route.path)
-    }, {
-        label: 'Product Categories',
-        icon: 'i-lucide-tags',
-        href: '/product-category',
-        active: /^\/product-category/.test(route.path)
+        label: 'Master Data',
+        icon: 'i-lucide-database',
+        type: 'trigger',
+        defaultOpen: /^\/(product|product-category|user)/.test(route.path),
+        children: [{
+            label: 'Users',
+            icon: 'i-lucide-users',
+            href: '/user',
+            active: /^\/user/.test(route.path)
+        }, {
+            label: 'Products',
+            icon: 'i-lucide-box',
+            href: '/product',
+            active: /^\/product(?!-category)/.test(route.path)
+        }, {
+            label: 'Product Categories',
+            icon: 'i-lucide-tags',
+            href: '/product-category',
+            active: /^\/product-category/.test(route.path)
+        }]
     }])
 </script>
 

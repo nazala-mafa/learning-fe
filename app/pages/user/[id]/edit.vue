@@ -12,29 +12,24 @@
 
     const { $api } = useNuxtApp();
 
-    const { data: user } = await $api(`/api/user/${id}`) as {
-        data: User
-    }    
+    const user = await $api(`/master-data/users/${id}`) as User
 
     const queryClient = useQueryClient();
 
     async function onSubmit(data: Schema) {
-        const { message } = await $api(`/api/user/${data.id}`, {
+        await $api(`/master-data/users/${id}`, {
             method: 'PATCH',
             body: data,
-        }) as {
-            message: string
-        }
+        })
 
         useToast().add({
             title: 'Update User',
-            description: message
+            description: 'User updated successfully'
         })
 
         navigateTo('/user');
-     
+
         queryClient.invalidateQueries({ queryKey: ['users'] });
-        queryClient.invalidateQueries({ queryKey: ['products'] });
     }
 </script>
 

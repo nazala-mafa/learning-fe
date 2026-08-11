@@ -2,20 +2,28 @@
     import { useQuery } from '@tanstack/vue-query';
     import type { DropdownMenuItem, TableColumn } from '@nuxt/ui';
     import { useConfirmDialog } from '~/composeable/useCofirmDialog';
-    import type { User, UserPaginatedData } from '~/types/user';
+    import type { User } from '~/types/user';
 
     definePageMeta({
         layout: 'dashboard',
         title: 'Users',
     })
 
+    const LIMIT = 10
+
     const route = useRoute()
+    const router = useRouter()
+
+    const offset = computed(() => Number(route.query.offset ?? 0))
+    const search = ref<string>(String(route.query.search ?? ''));
 
     const { $api } = useNuxtApp();
 
     const { data: users, refetch } = useQuery({
-        queryKey: computed(() => ['users', route.query]),
-        queryFn: async () => await $api(`/api/user`, { query: route.query }) as UserPaginatedData,
+        queryKey: computed(() => ['users', offset.value, route.query.search]),
+        queryFn: async () => await $api('/master-data/users/', {
+            query: { offset: offset.value, limit: LIMIT, search: route.query.search }
+        }) as User[],
     })
 
     const columns: TableColumn<User>[] = [
@@ -24,12 +32,20 @@
             header: '#',
         },
         {
-            accessorKey: 'name',
-            header: 'Name',
+            accessorKey: 'username',
+            header: 'Username',
+        },
+        {
+            accessorKey: 'full_name',
+            header: 'Full Name',
         },
         {
             accessorKey: 'email',
             header: 'Email',
+        },
+        {
+            accessorKey: 'job_title',
+            header: 'Job Title',
         },
         {
             id: 'action'
@@ -52,11 +68,11 @@
                     icon: 'i-lucide-trash',
                     color: 'error',
                     onSelect: async () => {
-                        if (await confirm({ 
-                            title: 'Delete confirmation', 
+                        if (await confirm({
+                            title: 'Delete confirmation',
                             description: 'Are you sure to delete this item? This item will deleted permanently.'
                         })) {
-                            await $api(`/api/user/${user.id}`, {
+                            await $api(`/master-data/users/${user.id}`, {
                                 method: 'DELETE',
                             });
                             await refetch();
@@ -71,22 +87,25 @@
         ]
     }
 
-    const search = ref<string>(String(route.query.search ?? ''));
-
-    const router = useRouter()
     const onSearch = () => {
-        const query = {
-            search: search.value,
-            page: 1,
-        };        
-        router.push({ query });
+        router.push({ query: { search: search.value, offset: 0 } });
     }
 
     const onReset = () => {
         search.value = '';
+        router.push({ query: {} });
     }
 
-    const hasQueryParams = computed(() => Object.keys(route.query).length > 0);    
+    const hasQueryParams = computed(() => Object.keys(route.query).length > 0);
+
+    const hasNext = computed(() => (users.value?.length ?? 0) === LIMIT)
+
+    function goPrev() {
+        router.push({ query: { ...route.query, offset: Math.max(0, offset.value - LIMIT) } })
+    }
+    function goNext() {
+        router.push({ query: { ...route.query, offset: offset.value + LIMIT } })
+    }
 </script>
 
 <template>
@@ -102,23 +121,23 @@
                 <div class="flex justify-end items-center gap-2">
                     <UInput
                         type="search"
-                        placeholder="Email, Name ..."
+                        placeholder="Username, Email, Name ..."
                         v-model="search"
                     />
                     <UButton icon="i-lucide-filter" @click="onSearch" />
-                    <UButton v-if="hasQueryParams" icon="i-lucide-redo" href="/user" @click="onReset"/>
+                    <UButton v-if="hasQueryParams" icon="i-lucide-redo" @click="onReset" />
                 </div>
             </div>
         </UCard>
 
-        <UCard 
+        <UCard
             :ui="{
                 body: 'sm:p-0'
             }"
         >
-            <UTable :data="users?.data" :columns="columns" empty="Product is empty">
+            <UTable :data="users" :columns="columns" empty="User is empty">
                 <template #num-cell="{ row }">
-                    <span>{{ row.index + Number(users?.from) }}</span>
+                    <span>{{ row.index + offset + 1 }}</span>
                 </template>
                 <template #action-cell="{ row }">
                     <UDropdownMenu :items="getDropdownActions(row.original)">
@@ -133,7 +152,7 @@
             </UTable>
 
             <template #footer>
-                <Pagination v-if="users" :paginated_data="users" />
+                <OffsetPagination :offset="offset" :limit="LIMIT" :has-next="hasNext" @prev="goPrev" @next="goNext" />
             </template>
         </UCard>
     </UMain>

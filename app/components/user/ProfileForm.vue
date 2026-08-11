@@ -9,28 +9,27 @@
         defaultUser?: User
     }>()
 
-    const isEdit = !!defaultUser
-
     const schema = z.object({
         username: z.string().min(1).max(255),
         email: z.email().max(255),
         full_name: z.string().max(255).nullable().optional(),
         job_title: z.string().max(255).nullable().optional(),
-        disabled: z.boolean().nullable().optional(),
         avatar_url: z.string().nullable().optional(),
         password: z.string().max(255).nullable().optional(),
-    }).superRefine(({ password }, ctx) => {
-        if (!isEdit && !password) {
-            ctx.addIssue({
-                code: z.ZodIssueCode.custom,
-                message: 'Password is required',
-                path: ['password'],
-            });
-        } else if (password && password.length > 0 && password.length < 4) {
+        password_confirmation: z.string().max(255).nullable().optional(),
+    }).superRefine(({ password, password_confirmation }, ctx) => {
+        if (password && password.length > 0 && password.length < 4) {
             ctx.addIssue({
                 code: z.ZodIssueCode.custom,
                 message: 'Password must be at least 4 characters',
                 path: ['password'],
+            });
+        }
+        if (password && password !== password_confirmation) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: `Passwords don't match`,
+                path: ['password_confirmation'],
             });
         }
     })
@@ -42,9 +41,9 @@
         email: defaultUser?.email,
         full_name: defaultUser?.full_name,
         job_title: defaultUser?.job_title,
-        disabled: defaultUser?.disabled ?? false,
         avatar_url: defaultUser?.avatar_url,
         password: undefined as string | undefined,
+        password_confirmation: undefined as string | undefined,
     })
 
     async function _onSubmit(event: FormSubmitEvent<Schema>) {
@@ -52,6 +51,7 @@
         if (!data.password) {
             delete data.password
         }
+        delete data.password_confirmation
         onSubmit(data)
     }
 </script>
@@ -62,7 +62,7 @@
         :state="state"
         @submit="_onSubmit"
         class="space-y-5"
-        id="user-form"
+        id="profile-form"
         v-on:error="(err) => console.log(err)"
     >
         <UFormField label="Avatar" name="avatar_url">
@@ -86,15 +86,15 @@
         </UFormField>
 
         <UFormField
-            :label="isEdit ? 'New Password' : 'Password'"
+            label="New Password"
             name="password"
-            :hint="isEdit ? 'Leave blank to keep current password' : undefined"
+            hint="Leave blank to keep current password"
         >
             <UInput type="password" v-model="state.password" class="w-full" />
         </UFormField>
 
-        <UFormField label="Disabled" name="disabled">
-            <USwitch v-model="state.disabled" />
+        <UFormField label="Confirm New Password" name="password_confirmation">
+            <UInput type="password" v-model="state.password_confirmation" class="w-full" />
         </UFormField>
     </UForm>
 </template>
